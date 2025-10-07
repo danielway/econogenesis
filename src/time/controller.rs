@@ -56,6 +56,7 @@ impl TimeController {
         };
     }
 
+    #[allow(dead_code)]
     pub fn simulation_time(&self) -> Duration {
         self.simulation_time
     }
