@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tty-interface = "4.0.1"
+tty-interface = "4.0.2"
 crossterm = "0.25"
+thiserror = "2.0.16"
