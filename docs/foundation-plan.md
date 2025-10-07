@@ -94,7 +94,7 @@ pub enum Error {
 }
 ```
 
-## Phase 2: Time Control System
+## Phase 2: Time Control System ✅ COMPLETED
 
 ### Goals
 - Implement simulation time tracking
@@ -103,16 +103,61 @@ pub enum Error {
 - Maintain consistent timestep for deterministic simulation
 
 ### Tasks
-- [ ] Create `TimeController` struct
-- [ ] Implement play/pause state management
-- [ ] Add speed multiplier (0.1x, 0.5x, 1x, 2x, 5x, 10x, etc.)
-- [ ] Track simulation time vs real time
-- [ ] Display time controls in UI
-- [ ] Add keyboard shortcuts (SPACE for play/pause, +/- for speed)
+- [x] Create `TimeController` struct
+- [x] Implement play/pause state management
+- [x] Add speed multiplier (0.1x, 0.5x, 1x, 2x, 5x, 10x, etc.)
+- [x] Track simulation time vs real time
+- [x] Display time controls in UI
+- [x] Add keyboard shortcuts (SPACE for play/pause, +/- for speed)
 
-### Implementation Notes
+### Implementation Summary
+Created a complete time control system for managing simulation time, play/pause state, and speed control:
+
+**Architecture:**
+- `TimeController` manages simulation time independently from real time
+- Starts in paused state by default
+- Supports speed multipliers from 0.1x to 50x with smooth transitions
+- Non-blocking keyboard input using crossterm events
+- Fixed timestep with configurable target FPS
+
+**Key Design Decisions:**
+1. **Separate sim time from real time**: Allows deterministic simulation at any speed
+2. **Non-blocking input**: Uses `crossterm::event::poll` with zero timeout
+3. **Speed levels**: Predefined steps (0.1x, 0.5x, 1x, 2x, 5x, 10x, 20x, 50x) for intuitive control
+4. **Time formatting**: Human-readable display (days, hours, minutes, seconds)
+5. **Frame timing reset**: Prevents time jumps when unpausing
+
+**Files Created/Modified:**
+- [src/time/mod.rs](../src/time/mod.rs) - Module exports
+- [src/time/controller.rs](../src/time/controller.rs) - TimeController with full implementation and tests
+- [src/main.rs](../src/main.rs) - Integrated time control into game loop with keyboard input
+
+**Features Implemented:**
+- Play/Pause toggle (SPACE key)
+- Speed increase/decrease (+/- keys)
+- Quit functionality (Q/ESC keys)
+- Real-time UI updates showing pause state, speed, and simulation time
+- Clock animation that advances with simulation time
+
+**Testing:** All 7 unit tests pass, covering:
+- Initial paused state
+- Pause toggling
+- Speed increase/decrease
+- Time advancement when playing
+- Time freeze when paused
+- Time formatting
+
+**Keyboard Controls:**
+```
+SPACE    - Play/Pause
++/=      - Increase speed
+-/_      - Decrease speed
+Q/ESC    - Quit
+```
+
+### Actual Implementation
 ```rust
-struct TimeController {
+pub struct TimeController {
     is_paused: bool,
     speed_multiplier: f64,
     simulation_time: Duration,
@@ -121,8 +166,16 @@ struct TimeController {
 }
 
 impl TimeController {
-    fn delta_time(&self) -> Duration { /* ... */ }
-    fn step(&mut self) { /* ... */ }
+    pub fn new(target_fps: u32) -> Self;
+    pub fn is_paused(&self) -> bool;
+    pub fn toggle_pause(&mut self);
+    pub fn speed_multiplier(&self) -> f64;
+    pub fn increase_speed(&mut self);
+    pub fn decrease_speed(&mut self);
+    pub fn simulation_time(&self) -> Duration;
+    pub fn delta_time(&self) -> Duration;
+    pub fn step(&mut self) -> Duration;
+    pub fn format_time(&self) -> String;
 }
 ```
 
