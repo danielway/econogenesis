@@ -1,26 +1,20 @@
-# Multi-Scale Navigation & Map System Plan
+# Navigation & Map System Plan
 
-**Status:** 🚧 Phase 1 Complete - In Development
-**Target:** Make Econogenesis a fully explorable, procedurally generated universe
-**Scope:** Complete navigation system across all 6 zoom levels with procedural map generation
+**Status:** Phase 1 Complete - In Development
 **Last Updated:** 2025-10-08
-
----
 
 ## Overview
 
-Transform Econogenesis from a static demonstration into an explorable universe with procedurally generated content and full navigation across all 6 zoom levels:
+Full navigation and procedural generation across all 6 zoom levels:
 
-**Galaxy** → **Solar System** → **Planet** → **Region** → **Local Area** → **Room**
+**Galaxy → Solar System → Planet → Region → Local Area → Room**
 
-The player will be able to:
-- Navigate within each zoom level using arrow keys
+**Features:**
+- Arrow key navigation at each zoom level
 - Zoom into entities (systems, planets, regions, areas, rooms)
-- Zoom out to parent levels while maintaining context
-- Explore procedurally generated, persistent worlds
-- See their position and available navigation options
-
----
+- Zoom out to parent levels maintaining context
+- Procedurally generated, persistent worlds
+- Position and navigation feedback
 
 ## Phase 1: Navigation Infrastructure (Foundation) ✅ COMPLETE
 
@@ -364,36 +358,11 @@ impl Camera {
 
 **Symbol Mappings:**
 
-**Galaxy View:**
-- `*` = Star system
-- `·` = Empty space
-- `@` = Player
-
-**Solar System View:**
-- `☉` = Star (different colors for types)
-- `o` = Small planet
-- `O` = Large planet
-- `@` = Player ship
-
-**Planet View:**
-- `~` = Ocean
-- `^` = Mountains
-- `"` = Plains
-- `♣` = Forest
-- `#` = Desert
-- `*` = Ice
-- `@` = Player
-
-**Region View:**
-- ASCII art for settlements
-- Terrain symbols
-- Road connections
-
-**Area/Room Views:**
-- `▓` = Buildings/walls
-- `░` = Floors
-- `├─┤` = Doors
-- `@` = Player
+Galaxy: `*` star system, `·` empty space, `@` player
+Solar System: `☉` star, `o/O` planets, `@` player ship
+Planet: `~` ocean, `^` mountains, `"` plains, `♣` forest, `#` desert, `*` ice, `@` player
+Region: ASCII settlements, terrain symbols, roads
+Area/Room: `▓` walls, `░` floors, `├─┤` doors, `@` player
 
 ### 4.3 Dynamic View Rendering
 
@@ -645,64 +614,48 @@ fn handle_input(&mut self) -> Result<bool> {
 
 ## Success Criteria
 
-### Phase 1 (Complete) ✅
-- ✅ Player can navigate within each zoom level using arrow keys
-- ✅ Arrow key movement is smooth and responsive
-- ✅ Position is maintained independently at each zoom level
-- ✅ Visual feedback for current position (coordinate display)
-- ✅ Comprehensive test coverage for navigation (7 tests, all passing)
+### Phase 1 (Complete)
+- Player can navigate with arrow keys at each zoom level
+- Position maintained independently at each level
+- Visual feedback for current position
+- 7 navigation tests passing
 
-### Phase 2+ (Pending) ⏳
-- ⏳ Player can enter entities with Enter key (requires maps)
-- ⏳ Player can exit to parent level with zoom out (requires parent tracking)
-- ⏳ Maps are procedurally generated and deterministic (same seed = same map)
-- ⏳ All 6 zoom levels have explorable content
-- ⏳ Camera follows player smoothly
-- ⏳ Performance remains stable (30+ FPS) with large maps
-- ⏳ Comprehensive test coverage for map generation
+### Phase 2+ (Pending)
+- Enter entities with Enter key (requires maps)
+- Exit to parent level with zoom out (requires parent tracking)
+- Procedurally generated deterministic maps
+- All 6 zoom levels have explorable content
+- Camera follows player
+- Stable performance (30+ FPS)
+- Map generation test coverage
 
----
+## Future Enhancements
 
-## Future Enhancements (Post-MVP)
+Post-MVP features:
+- Named locations with procedural generation
+- Unique landmarks at each zoom level
+- Multiple entrances/exits between areas
+- Fog of war
+- Minimap
+- Search/filter entities
+- Fast travel
 
-### Phase 2 Features
-- **Named Locations:** Procedural name generation for all entities
-- **Landmarks:** Unique, special locations at each zoom level
-- **Interconnected Areas:** Multiple entrances/exits
-- **Fog of War:** Explore to reveal, save explored state
-- **Minimap:** Show context of current location
-- **Search/Filter:** Find entities by name/type
-- **Fast Travel:** Teleport to previously visited locations
-
-### Phase 3 Features (Economic Integration)
-- **Resources on Maps:** Distribute resources based on terrain
-- **Trade Routes:** Connect areas with economic relationships
-- **Population Centers:** Settlements with economic activity
-- **Market Locations:** Specific rooms/areas for trading
-- **NPC Locations:** Agents positioned on maps
-
----
-
-## Related Documents
-
-- [Foundation Plan](foundation-plan.md) - Core infrastructure (COMPLETE)
-- Main README - Project overview
-- Architecture documentation (future)
-
----
+Economic integration:
+- Resources distributed based on terrain
+- Trade routes connecting areas
+- Population centers with economic activity
+- Market locations
+- Positioned NPCs/agents
 
 ## Progress Summary
 
-**Phase 1: Navigation Infrastructure** ✅ COMPLETE (2025-10-08)
-- All core navigation features implemented
-- 7 new tests added, 25 total tests passing
-- Arrow key movement functional at all zoom levels
-- UI updated with coordinate display and help system
+**Phase 1: Navigation Infrastructure** - Complete (2025-10-08)
+- Core navigation features implemented
+- 7 new tests, 25 total passing
+- Arrow key movement at all zoom levels
+- Coordinate display and help system
 
-**Next Up: Phase 2 - Map Data Structures**
+**Next: Phase 2 - Map Data Structures**
 - GalaxyMap and SolarSystemMap structures
-- Procedural generation foundations
-- Camera system for viewport management
-
-**Last Updated:** 2025-10-08
-**Status:** 🚧 Phase 1 Complete - Ready for Phase 2
+- Procedural generation
+- Camera system

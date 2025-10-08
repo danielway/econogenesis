@@ -1,16 +1,16 @@
-# Foundation Plan: Core Simulator Infrastructure
+# Foundation Plan
 
-This document outlines the plan for building the foundational components of Econogenesis. The goal is to establish the basic architecture that supports real-time simulation, multi-scale rendering, and time control.
+Core simulator infrastructure implementation.
 
 ## Objectives
 
-Build the minimal viable foundation that includes:
+Minimal viable foundation:
 
-1. **Rendering System**: Terminal-based canvas using tty-interface
-2. **Time Control**: Play/pause and speed adjustment
-3. **Zoom System**: Multi-scale view hierarchy and navigation
-4. **Simulation Loop**: Frame-based update cycle
-5. **Input Handling**: Keyboard controls for time and zoom
+1. Rendering system - terminal canvas with tty-interface
+2. Time control - play/pause and speed adjustment
+3. Zoom system - multi-scale view hierarchy
+4. Simulation loop - frame-based update cycle
+5. Input handling - keyboard controls
 
 ## Phase 1: Basic Rendering Framework ✅ COMPLETED
 
@@ -593,68 +593,41 @@ Once the foundation is solid, development can proceed to:
 4. **UI Enhancement**: Better visualizations, menus, info panels
 5. **Game Mechanics**: Player actions, inventory, transactions
 
-## Foundation Status: ALL PHASES COMPLETE! 🎉🎉🎉
+## Status: Complete
 
-**Completed Phases:**
-- ✅ **Phase 1**: Rendering System (Complete)
-- ✅ **Phase 2**: Time Control System (Complete)
-- ✅ **Phase 3**: Zoom Level System (Complete)
-- ✅ **Phase 4**: Simulation Loop Integration (Complete)
-- ✅ **Phase 5**: Input System (Complete)
-- ✅ **Phase 6**: Basic World State (Complete)
+All 6 foundation phases complete:
 
-**Current State:**
-- Fully functional terminal-based simulation framework
-- 18 unit tests passing, zero warnings, zero clippy violations
-- Clean, modular architecture ready for economic simulation features
-- Multi-scale world representation with sample data at all 6 zoom levels
-- Complete input system with help overlay
-- All core infrastructure in place and tested
+- Phase 1: Rendering System
+- Phase 2: Time Control System
+- Phase 3: Zoom Level System
+- Phase 4: Simulation Loop Integration
+- Phase 5: Input System
+- Phase 6: Basic World State
 
-**Achievement Unlocked:**
-- ✨ All 6 foundation phases completed
-- 📊 18 passing tests across all systems
-- 🏗️ Solid architecture for future economic features
-- 🎮 Fully playable framework ready for content
+**Current state:**
+- 18 unit tests passing, zero warnings
+- Clean modular architecture
+- Multi-scale world representation
+- Full input system with help overlay
 
-**Next Steps:**
-Now that the foundation is complete, development can proceed to:
-1. **World Generation**: Procedural generation of galaxy → systems → planets → regions
-2. **Economic Primitives**: Resources, goods, prices
-3. **Agents & Markets**: Basic economic agents and market mechanics
-4. **Player Interaction**: Direct economic actions
-5. **Content Expansion**: More entities, buildings, resources
-
-## Timeline Achievement
-
-- **Phase 1**: ✅ Complete (Rendering System)
-- **Phase 2**: ✅ Complete (Time Control System)
-- **Phase 3**: ✅ Complete (Zoom Level System)
-- **Phase 4**: ✅ Complete (Simulation Loop Integration)
-- **Phase 5**: ✅ Complete (Input System)
-- **Phase 6**: ✅ Complete (Basic World State)
-
-**Foundation: 6/6 phases complete! 🏆**
+**Next:**
+1. World generation - procedural galaxy/systems/planets/regions
+2. Economic primitives - resources, goods, prices
+3. Agents and markets
+4. Player interaction
 
 ## Technical Considerations
 
 ### Performance
-- Target 30-60 FPS in terminal
-- Efficient terminal redrawing (only update changed cells)
-- Consider double buffering to reduce flicker
+- Target 30-60 FPS
+- Efficient terminal redrawing
+- Double buffering to reduce flicker
 
 ### Testing
-- Unit tests for time control logic
+- Unit tests for core logic
 - Integration tests for zoom transitions
-- Manual testing in different terminal emulators
+- Manual testing across terminal emulators
 
 ### Platform Support
-- Test on Linux, macOS, Windows (via WSL or native)
-- Ensure compatibility with common terminal emulators
-- Handle various terminal sizes gracefully
-
-### Code Quality
-- Follow Rust idioms and best practices
-- Document public APIs
-- Keep modules loosely coupled
-- Use traits for extensibility
+- Linux, macOS, Windows (via WSL)
+- Handle various terminal sizes
