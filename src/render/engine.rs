@@ -28,6 +28,7 @@ impl<'a> RenderEngine<'a> {
     }
 
     pub fn begin_frame(&mut self) -> Result<()> {
+        self.canvas.clear();
         Ok(())
     }
 

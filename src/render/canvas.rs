@@ -25,6 +25,10 @@ impl<'a> Canvas<'a> {
         Ok(self.interface.apply()?)
     }
 
+    pub fn clear(&mut self) {
+        self.interface.clear_rest_of_interface(pos!(0, 0));
+    }
+
     pub fn exit(self) -> Result<()> {
         Ok(self.interface.exit()?)
     }
