@@ -11,6 +11,11 @@ pub enum InputAction {
     ZoomIn,
     ZoomOut,
     ToggleHelp,
+    MoveUp,
+    MoveDown,
+    MoveLeft,
+    MoveRight,
+    Enter,
     None,
 }
 
@@ -41,6 +46,11 @@ impl InputHandler {
                 KeyCode::Char('h') | KeyCode::Char('H') | KeyCode::Char('?') => {
                     InputAction::ToggleHelp
                 }
+                KeyCode::Up => InputAction::MoveUp,
+                KeyCode::Down => InputAction::MoveDown,
+                KeyCode::Left => InputAction::MoveLeft,
+                KeyCode::Right => InputAction::MoveRight,
+                KeyCode::Enter => InputAction::Enter,
                 _ => InputAction::None,
             };
 

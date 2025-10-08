@@ -275,6 +275,6 @@ mod tests {
     fn test_player_position() {
         let state = WorldState::new();
         let pos = state.player_position();
-        assert_eq!(pos.galaxy_coords, (0.0, 0.0, 0.0));
+        assert_eq!(pos.galaxy_coords, (0, 0));
     }
 }

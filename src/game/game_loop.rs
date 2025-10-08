@@ -2,7 +2,7 @@ use crate::input::{InputAction, InputHandler};
 use crate::render::{Canvas, RenderEngine};
 use crate::result::Result;
 use crate::time::TimeController;
-use crate::zoom::{Position, ZoomLevel, ZoomManager};
+use crate::zoom::{Direction, Position, ZoomLevel, ZoomManager};
 use std::thread::sleep;
 
 use super::WorldState;
@@ -73,6 +73,23 @@ impl<'a> GameLoop<'a> {
             InputAction::ZoomOut => {
                 self.zoom_manager.zoom_out();
             }
+            InputAction::MoveUp => {
+                self.zoom_manager.move_in_direction(Direction::Up);
+            }
+            InputAction::MoveDown => {
+                self.zoom_manager.move_in_direction(Direction::Down);
+            }
+            InputAction::MoveLeft => {
+                self.zoom_manager.move_in_direction(Direction::Left);
+            }
+            InputAction::MoveRight => {
+                self.zoom_manager.move_in_direction(Direction::Right);
+            }
+            InputAction::Enter => {
+                // For now, just attempt to zoom in
+                // Later this will be "enter current entity"
+                self.zoom_manager.zoom_in();
+            }
             InputAction::ToggleHelp | InputAction::None => {}
         }
 
@@ -139,10 +156,7 @@ impl<'a> GameLoop<'a> {
             canvas.draw_text(
                 2,
                 info_y + 2,
-                &format!(
-                    "Position: ({:.1}, {:.1}, {:.1})",
-                    coords.0, coords.1, coords.2
-                ),
+                &format!("Position: ({}, {})", coords.0, coords.1),
             );
             canvas.draw_text(
                 2,
@@ -156,7 +170,7 @@ impl<'a> GameLoop<'a> {
 
         let status_y = height - 2;
         canvas.draw_box(0, status_y, width, 2);
-        let controls_text = "[SPACE] Play/Pause | [+/-] Speed | [Z/X] Zoom | [H/?] Help | [Q] Quit";
+        let controls_text = "[ARROWS] Move | [ENTER] Enter | [Z/X] Zoom | [H/?] Help | [Q] Quit";
         canvas.draw_text(2, status_y + 1, controls_text);
     }
 
@@ -171,11 +185,13 @@ impl<'a> GameLoop<'a> {
         canvas.draw_text(2, help_y + 5, "║  -/_       Decrease time speed       ║");
         canvas.draw_text(2, help_y + 6, "║  Z         Zoom in                   ║");
         canvas.draw_text(2, help_y + 7, "║  X         Zoom out                  ║");
-        canvas.draw_text(2, help_y + 8, "║  H/?       Toggle this help          ║");
-        canvas.draw_text(2, help_y + 9, "║  Q/ESC     Quit application          ║");
-        canvas.draw_text(2, help_y + 10, "╠══════════════════════════════════════╣");
-        canvas.draw_text(2, help_y + 11, "║  Press H or ? to close this help     ║");
-        canvas.draw_text(2, help_y + 12, "╚══════════════════════════════════════╝");
+        canvas.draw_text(2, help_y + 8, "║  ↑↓←→      Navigate within level     ║");
+        canvas.draw_text(2, help_y + 9, "║  ENTER     Enter current entity      ║");
+        canvas.draw_text(2, help_y + 10, "║  H/?       Toggle this help          ║");
+        canvas.draw_text(2, help_y + 11, "║  Q/ESC     Quit application          ║");
+        canvas.draw_text(2, help_y + 12, "╠══════════════════════════════════════╣");
+        canvas.draw_text(2, help_y + 13, "║  Press H or ? to close this help     ║");
+        canvas.draw_text(2, help_y + 14, "╚══════════════════════════════════════╝");
     }
 
     fn draw_zoom_view(canvas: &mut Canvas, content_y: u16, level: ZoomLevel) {

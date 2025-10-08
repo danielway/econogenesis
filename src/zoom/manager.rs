@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::game::state::EntityId;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ZoomLevel {
     Room,
@@ -8,6 +10,25 @@ pub enum ZoomLevel {
     Planet,
     SolarSystem,
     Galaxy,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+impl Direction {
+    pub fn to_offset(&self) -> (i32, i32) {
+        match self {
+            Direction::Up => (0, -1),
+            Direction::Down => (0, 1),
+            Direction::Left => (-1, 0),
+            Direction::Right => (1, 0),
+        }
+    }
 }
 
 impl ZoomLevel {
@@ -48,35 +69,60 @@ impl fmt::Display for ZoomLevel {
 }
 
 #[derive(Debug, Clone, Copy)]
+#[derive(Default)]
 pub struct Position {
-    pub galaxy_coords: (f64, f64, f64),
-    pub system_coords: (f64, f64, f64),
-    pub planet_coords: (f64, f64, f64),
-    pub local_coords: (f64, f64, f64),
+    // Entity ID tracking - which specific entity at each level
+    pub current_system_id: Option<EntityId>,
+    pub current_planet_id: Option<EntityId>,
+    pub current_region_id: Option<EntityId>,
+    pub current_area_id: Option<EntityId>,
+    pub current_room_id: Option<EntityId>,
+
+    // Grid coordinates for spatial navigation (integer-based)
+    pub galaxy_coords: (i32, i32),
+    pub system_coords: (i32, i32),
+    pub planet_coords: (i32, i32),
+    pub region_coords: (i32, i32),
+    pub area_coords: (i32, i32),
+    pub room_coords: (i32, i32),
 }
 
-impl Default for Position {
-    fn default() -> Self {
-        Self {
-            galaxy_coords: (0.0, 0.0, 0.0),
-            system_coords: (0.0, 0.0, 0.0),
-            planet_coords: (0.0, 0.0, 0.0),
-            local_coords: (0.0, 0.0, 0.0),
-        }
-    }
-}
 
 impl Position {
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn coords_for_level(&self, level: ZoomLevel) -> (f64, f64, f64) {
+    pub fn coords_for_level(&self, level: ZoomLevel) -> (i32, i32) {
         match level {
             ZoomLevel::Galaxy => self.galaxy_coords,
             ZoomLevel::SolarSystem => self.system_coords,
-            ZoomLevel::Planet | ZoomLevel::Region => self.planet_coords,
-            ZoomLevel::LocalArea | ZoomLevel::Room => self.local_coords,
+            ZoomLevel::Planet => self.planet_coords,
+            ZoomLevel::Region => self.region_coords,
+            ZoomLevel::LocalArea => self.area_coords,
+            ZoomLevel::Room => self.room_coords,
+        }
+    }
+
+    pub fn set_coords_for_level(&mut self, level: ZoomLevel, coords: (i32, i32)) {
+        match level {
+            ZoomLevel::Galaxy => self.galaxy_coords = coords,
+            ZoomLevel::SolarSystem => self.system_coords = coords,
+            ZoomLevel::Planet => self.planet_coords = coords,
+            ZoomLevel::Region => self.region_coords = coords,
+            ZoomLevel::LocalArea => self.area_coords = coords,
+            ZoomLevel::Room => self.room_coords = coords,
+        }
+    }
+
+    pub fn current_entity_id(&self, level: ZoomLevel) -> Option<EntityId> {
+        match level {
+            ZoomLevel::Galaxy => None,
+            ZoomLevel::SolarSystem => self.current_system_id,
+            ZoomLevel::Planet => self.current_planet_id,
+            ZoomLevel::Region => self.current_region_id,
+            ZoomLevel::LocalArea => self.current_area_id,
+            ZoomLevel::Room => self.current_room_id,
         }
     }
 }
@@ -118,6 +164,24 @@ impl ZoomManager {
         } else {
             false
         }
+    }
+
+    /// Move in a direction within the current zoom level
+    /// Returns true if the movement was successful
+    pub fn move_in_direction(&mut self, direction: Direction) -> bool {
+        let current_coords = self.position.coords_for_level(self.current_level);
+        let offset = direction.to_offset();
+        let new_coords = (current_coords.0 + offset.0, current_coords.1 + offset.1);
+
+        // For now, allow unlimited movement (will be constrained by map boundaries later)
+        self.position
+            .set_coords_for_level(self.current_level, new_coords);
+        true
+    }
+
+    /// Get mutable access to position for advanced operations
+    pub fn position_mut(&mut self) -> &mut Position {
+        &mut self.position
     }
 }
 
@@ -195,5 +259,112 @@ mod tests {
         assert!(ZoomLevel::Region < ZoomLevel::Planet);
         assert!(ZoomLevel::Planet < ZoomLevel::SolarSystem);
         assert!(ZoomLevel::SolarSystem < ZoomLevel::Galaxy);
+    }
+
+    #[test]
+    fn direction_to_offset() {
+        assert_eq!(Direction::Up.to_offset(), (0, -1));
+        assert_eq!(Direction::Down.to_offset(), (0, 1));
+        assert_eq!(Direction::Left.to_offset(), (-1, 0));
+        assert_eq!(Direction::Right.to_offset(), (1, 0));
+    }
+
+    #[test]
+    fn position_coords_for_level() {
+        let mut pos = Position::new();
+        pos.galaxy_coords = (5, 10);
+        pos.system_coords = (3, 7);
+        pos.planet_coords = (12, 8);
+
+        assert_eq!(pos.coords_for_level(ZoomLevel::Galaxy), (5, 10));
+        assert_eq!(pos.coords_for_level(ZoomLevel::SolarSystem), (3, 7));
+        assert_eq!(pos.coords_for_level(ZoomLevel::Planet), (12, 8));
+    }
+
+    #[test]
+    fn position_set_coords_for_level() {
+        let mut pos = Position::new();
+        pos.set_coords_for_level(ZoomLevel::Galaxy, (10, 20));
+        pos.set_coords_for_level(ZoomLevel::SolarSystem, (5, 15));
+
+        assert_eq!(pos.galaxy_coords, (10, 20));
+        assert_eq!(pos.system_coords, (5, 15));
+    }
+
+    #[test]
+    fn position_entity_id_tracking() {
+        let mut pos = Position::new();
+        assert_eq!(pos.current_entity_id(ZoomLevel::Galaxy), None);
+        assert_eq!(pos.current_entity_id(ZoomLevel::SolarSystem), None);
+
+        pos.current_system_id = Some(42);
+        pos.current_planet_id = Some(100);
+
+        assert_eq!(pos.current_entity_id(ZoomLevel::SolarSystem), Some(42));
+        assert_eq!(pos.current_entity_id(ZoomLevel::Planet), Some(100));
+    }
+
+    #[test]
+    fn zoom_manager_movement() {
+        let mut manager = ZoomManager::new();
+        assert_eq!(manager.position().galaxy_coords, (0, 0));
+
+        // Move right
+        manager.move_in_direction(Direction::Right);
+        assert_eq!(manager.position().galaxy_coords, (1, 0));
+
+        // Move down
+        manager.move_in_direction(Direction::Down);
+        assert_eq!(manager.position().galaxy_coords, (1, 1));
+
+        // Move left
+        manager.move_in_direction(Direction::Left);
+        assert_eq!(manager.position().galaxy_coords, (0, 1));
+
+        // Move up
+        manager.move_in_direction(Direction::Up);
+        assert_eq!(manager.position().galaxy_coords, (0, 0));
+    }
+
+    #[test]
+    fn zoom_manager_movement_different_levels() {
+        let mut manager = ZoomManager::new();
+
+        // Move at galaxy level
+        manager.move_in_direction(Direction::Right);
+        assert_eq!(manager.position().galaxy_coords, (1, 0));
+
+        // Zoom into solar system
+        manager.zoom_in();
+        assert_eq!(manager.current_level(), ZoomLevel::SolarSystem);
+
+        // Movement at solar system level shouldn't affect galaxy coords
+        manager.move_in_direction(Direction::Down);
+        assert_eq!(manager.position().system_coords, (0, 1));
+        assert_eq!(manager.position().galaxy_coords, (1, 0)); // unchanged
+
+        // Zoom into planet
+        manager.zoom_in();
+        assert_eq!(manager.current_level(), ZoomLevel::Planet);
+
+        // Movement at planet level
+        manager.move_in_direction(Direction::Left);
+        manager.move_in_direction(Direction::Left);
+        assert_eq!(manager.position().planet_coords, (-2, 0));
+        assert_eq!(manager.position().system_coords, (0, 1)); // unchanged
+        assert_eq!(manager.position().galaxy_coords, (1, 0)); // unchanged
+    }
+
+    #[test]
+    fn zoom_manager_allows_negative_coordinates() {
+        let mut manager = ZoomManager::new();
+
+        // Move left from origin - should allow negative coordinates
+        manager.move_in_direction(Direction::Left);
+        assert_eq!(manager.position().galaxy_coords, (-1, 0));
+
+        // Move up from origin
+        manager.move_in_direction(Direction::Up);
+        assert_eq!(manager.position().galaxy_coords, (-1, -1));
     }
 }
