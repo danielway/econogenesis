@@ -16,6 +16,8 @@ struct RenderState<'a> {
     zoom_level: ZoomLevel,
     position: Position,
     tick_count: u64,
+    entity_name: String,
+    entity_count: usize,
     _phantom: std::marker::PhantomData<&'a ()>,
 }
 
@@ -85,15 +87,18 @@ impl<'a> GameLoop<'a> {
     fn render(&mut self) -> Result<()> {
         self.render_engine.begin_frame()?;
 
+        let zoom_level = self.zoom_manager.current_level();
         let state = RenderState {
             fps: self.render_engine.fps(),
             show_help: self.input_handler.is_help_visible(),
             time_str: self.time_controller.format_time(),
             is_paused: self.time_controller.is_paused(),
             speed: self.time_controller.speed_multiplier(),
-            zoom_level: self.zoom_manager.current_level(),
+            zoom_level,
             position: *self.zoom_manager.position(),
             tick_count: self.world_state.tick_count(),
+            entity_name: self.world_state.get_current_entity_name(zoom_level),
+            entity_count: self.world_state.entity_count(),
             _phantom: std::marker::PhantomData,
         };
 
@@ -129,11 +134,7 @@ impl<'a> GameLoop<'a> {
 
             let info_y = content_y + 2;
             canvas.draw_text(2, info_y, &format!("Simulation Time: {}", state.time_str));
-            canvas.draw_text(
-                2,
-                info_y + 1,
-                &format!("Current Zoom: {}", state.zoom_level),
-            );
+            canvas.draw_text(2, info_y + 1, &format!("Location: {}", state.entity_name));
             let coords = state.position.coords_for_level(state.zoom_level);
             canvas.draw_text(
                 2,
@@ -143,7 +144,14 @@ impl<'a> GameLoop<'a> {
                     coords.0, coords.1, coords.2
                 ),
             );
-            canvas.draw_text(2, info_y + 3, &format!("World Ticks: {}", state.tick_count));
+            canvas.draw_text(
+                2,
+                info_y + 3,
+                &format!(
+                    "World: {} entities | Tick: {}",
+                    state.entity_count, state.tick_count
+                ),
+            );
         }
 
         let status_y = height - 2;
