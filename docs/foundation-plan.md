@@ -285,7 +285,7 @@ impl ZoomManager {
 }
 ```
 
-## Phase 4: Simulation Loop Integration
+## Phase 4: Simulation Loop Integration ✅ COMPLETED
 
 ### Goals
 - Integrate all components into a unified game loop
@@ -293,17 +293,64 @@ impl ZoomManager {
 - Create clean separation between update and render phases
 
 ### Tasks
-- [ ] Create main `GameLoop` struct
-- [ ] Implement fixed timestep with variable rendering
-- [ ] Add update() and render() phases
-- [ ] Integrate input handling
-- [ ] Add graceful shutdown handling
-- [ ] Implement basic state management
+- [x] Create main `GameLoop` struct
+- [x] Implement fixed timestep with variable rendering
+- [x] Add update() and render() phases
+- [x] Integrate input handling
+- [x] Add graceful shutdown handling
+- [x] Implement basic state management
 
-### Implementation Notes
+### Implementation Summary
+Refactored the entire application into a clean, modular architecture with proper separation of concerns:
+
+**Architecture:**
+- `GameLoop` struct owns all game systems and manages the main loop
+- `InputHandler` encapsulates all keyboard input with action-based API
+- `WorldState` placeholder for future economic simulation state
+- Main.rs reduced to minimal initialization code
+- Clean separation: input → update → render → sleep cycle
+
+**Key Design Decisions:**
+1. **Ownership model**: GameLoop owns all subsystems and consumes self on run()
+2. **Action-based input**: InputHandler returns InputAction enums instead of directly mutating state
+3. **Static rendering**: draw_game() is a static method to avoid borrowing issues
+4. **RenderState struct**: Groups rendering parameters to avoid too-many-arguments clippy warning
+5. **Help overlay**: Toggle with H/? key to show all controls
+
+**Files Created/Modified:**
+- [src/game/mod.rs](../src/game/mod.rs) - Game module exports
+- [src/game/game_loop.rs](../src/game/game_loop.rs) - Complete GameLoop implementation with all rendering logic
+- [src/game/state.rs](../src/game/state.rs) - WorldState placeholder with tick counter
+- [src/input/mod.rs](../src/input/mod.rs) - Input module exports
+- [src/input/handler.rs](../src/input/handler.rs) - InputHandler with action-based API
+- [src/main.rs](../src/main.rs) - Minimal initialization (30 lines vs 235 lines)
+- [src/zoom/mod.rs](../src/zoom/mod.rs) - Added Position export
+
+**Features Implemented:**
+- Clean game loop with proper phase separation
+- Input handling via InputAction enum
+- Help overlay showing all keyboard controls (H/? to toggle)
+- World state tracking with tick counter
+- Graceful shutdown with terminal cleanup
+- All previous features maintained (time control, zoom, FPS display)
+
+**Testing:** All 13 unit tests pass, zero clippy warnings, clean build
+
+**Updated Keyboard Controls:**
+```
+SPACE    - Play/Pause
++/=      - Increase speed
+-/_      - Decrease speed
+Z        - Zoom in
+X        - Zoom out
+H/?      - Toggle help overlay
+Q/ESC    - Quit
+```
+
+### Actual Implementation
 ```rust
-struct GameLoop {
-    render_engine: RenderEngine,
+pub struct GameLoop<'a> {
+    render_engine: RenderEngine<'a>,
     time_controller: TimeController,
     zoom_manager: ZoomManager,
     world_state: WorldState,
@@ -311,22 +358,49 @@ struct GameLoop {
 }
 
 impl GameLoop {
-    fn run(&mut self) {
+    pub fn run(mut self) -> Result<()> {
         loop {
-            self.handle_input();
-
-            if !self.time_controller.is_paused {
+            if self.handle_input()? { break; }
+            if !self.time_controller.is_paused() {
                 self.update();
             }
-
-            self.render();
-            self.sleep_until_next_frame();
+            self.render()?;
+            sleep(self.time_controller.target_frame_duration());
         }
+        self.render_engine.exit()?;
+        Ok(())
     }
+
+    fn handle_input(&mut self) -> Result<bool>;
+    fn update(&mut self);
+    fn render(&mut self) -> Result<()>;
+}
+
+pub enum InputAction {
+    Quit, TogglePause, IncreaseSpeed, DecreaseSpeed,
+    ZoomIn, ZoomOut, ToggleHelp, None,
+}
+
+pub struct InputHandler {
+    show_help: bool,
+}
+
+impl InputHandler {
+    pub fn poll(&mut self) -> Result<InputAction>;
+    pub fn is_help_visible(&self) -> bool;
+}
+
+pub struct WorldState {
+    tick_count: u64,
+}
+
+impl WorldState {
+    pub fn update(&mut self, delta: Duration);
+    pub fn tick_count(&self) -> u64;
 }
 ```
 
-## Phase 5: Input System
+## Phase 5: Input System ✅ COMPLETED (as part of Phase 4)
 
 ### Goals
 - Handle keyboard input non-blocking
@@ -335,25 +409,41 @@ impl GameLoop {
 - Provide visual feedback
 
 ### Tasks
-- [ ] Create `InputHandler` for keyboard events
-- [ ] Define key mappings (play/pause, zoom, speed, quit)
-- [ ] Implement non-blocking input polling
-- [ ] Add command buffer for complex inputs
-- [ ] Create help overlay showing controls
+- [x] Create `InputHandler` for keyboard events
+- [x] Define key mappings (play/pause, zoom, speed, quit)
+- [x] Implement non-blocking input polling
+- [x] Create help overlay showing controls
+- [ ] Add command buffer for complex inputs (future feature)
+- [ ] Support arrow keys for navigation (future feature)
 
-### Key Bindings (Proposed)
+### Implementation Summary
+Input system was implemented as part of Phase 4 refactoring.
+
+**Key Features:**
+- Action-based input design with `InputAction` enum
+- Non-blocking polling using crossterm with zero timeout
+- Help overlay toggle integrated into InputHandler
+- All basic controls implemented and working
+
+**Completed in Phase 4:** See Phase 4 implementation for full details.
+
+### Current Key Bindings
 ```
 SPACE    - Play/Pause
 +/=      - Increase speed
 -/_      - Decrease speed
 Z        - Zoom in
 X        - Zoom out
-Arrow    - Navigate/move
-Q        - Quit
-H/?      - Help overlay
+H/?      - Toggle help overlay
+Q/ESC    - Quit
 ```
 
-## Phase 6: Basic World State
+**Future Extensions:**
+- Arrow keys for player movement
+- Command buffer for complex multi-key inputs
+- Configurable key bindings
+
+## Phase 6: Basic World State ⚙️ IN PROGRESS
 
 ### Goals
 - Create minimal world representation
@@ -361,7 +451,8 @@ H/?      - Help overlay
 - Enable position tracking
 
 ### Tasks
-- [ ] Define `WorldState` struct
+- [x] Define `WorldState` struct
+- [x] Implement basic update mechanism
 - [ ] Create placeholder data at each zoom level
 - [ ] Implement player position tracking
 - [ ] Add basic serialization for save/load (future)
@@ -435,16 +526,37 @@ Once the foundation is solid, development can proceed to:
 4. **UI Enhancement**: Better visualizations, menus, info panels
 5. **Game Mechanics**: Player actions, inventory, transactions
 
+## Foundation Status: PHASES 1-5 COMPLETE! 🎉
+
+**Completed Phases:**
+- ✅ **Phase 1**: Rendering System (Complete)
+- ✅ **Phase 2**: Time Control System (Complete)
+- ✅ **Phase 3**: Zoom Level System (Complete)
+- ✅ **Phase 4**: Simulation Loop Integration (Complete)
+- ✅ **Phase 5**: Input System (Complete)
+- ⚙️ **Phase 6**: Basic World State (In Progress - placeholder implemented)
+
+**Current State:**
+- Fully functional terminal-based simulation framework
+- 13 unit tests passing, zero warnings
+- Clean, modular architecture ready for economic simulation features
+- All core infrastructure in place
+
+**Next Steps:**
+- Complete Phase 6: Add multi-scale world data structures
+- Begin implementing economic simulation primitives
+- Add procedural world generation
+
 ## Estimated Timeline
 
-- **Phase 1**: 2-3 days (Rendering)
-- **Phase 2**: 1-2 days (Time Control)
-- **Phase 3**: 2-3 days (Zoom System)
-- **Phase 4**: 1-2 days (Integration)
-- **Phase 5**: 1-2 days (Input)
-- **Phase 6**: 1-2 days (World State)
+- **Phase 1**: ✅ Complete (Rendering)
+- **Phase 2**: ✅ Complete (Time Control)
+- **Phase 3**: ✅ Complete (Zoom System)
+- **Phase 4**: ✅ Complete (Integration)
+- **Phase 5**: ✅ Complete (Input)
+- **Phase 6**: ⚙️ In Progress (World State)
 
-**Total**: ~2 weeks for a solid foundation
+**Foundation: 5/6 phases complete!**
 
 ## Technical Considerations
 

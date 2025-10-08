@@ -1,3 +1,3 @@
 mod manager;
 
-pub use manager::{ZoomLevel, ZoomManager};
+pub use manager::{Position, ZoomLevel, ZoomManager};
