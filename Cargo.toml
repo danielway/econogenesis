@@ -5,5 +5,5 @@ edition = "2024"
 
 [dependencies]
 tty-interface = "4.0.2"
-crossterm = "0.25"
+crossterm = "0.29"
 thiserror = "2.0.16"
